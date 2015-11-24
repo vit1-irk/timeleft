@@ -1,0 +1,67 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="Настройки"
+    >
+
+    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+    <EditTextPreference
+        android:key="countLessons"
+        android:title="Количество уроков"
+        android:defaultValue="6"
+        android:inputType="numberDecimal"
+        android:maxLength="2"
+        />
+    <EditTextPreference
+        android:key="lessonLength"
+        android:title="Длина урока в минутах"
+        android:defaultValue="40"
+        android:inputType="numberDecimal"
+        />
+    <EditTextPreference
+        android:key="startHour"
+        android:title="Час начала занятий"
+        android:defaultValue="14"
+        android:inputType="numberDecimal"
+        />
+    <EditTextPreference
+        android:key="startMinute"
+        android:title="Минуты начала занятий"
+        android:defaultValue="0"
+        android:inputType="numberDecimal"
+        />
+    <EditTextPreference
+        android:key="localOffset"
+        android:title="Региональное смещение (Иркутск: 28800)"
+        android:defaultValue="28800"
+        android:inputType="numberDecimal"
+        />
+    <EditTextPreference
+        android:key="breaksText"
+        android:title="Перемены"
+        android:defaultValue="15\n15\n10\n10\n10\n10\n10"
+        android:inputType="textMultiLine"
+        />
+<!--
+    <EditTextPreference
+        android:key="example_text"
+        android:title="@string/pref_title_display_name"
+        android:defaultValue="@string/pref_default_display_name"
+        android:selectAllOnFocus="true"
+        android:inputType="textCapWords"
+        android:capitalize="words"
+        android:singleLine="true"
+        android:maxLines="1" />
+-->
+    <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
+         dismiss it. -->
+    <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
+    <!-- <ListPreference
+        android:key="example_list"
+        android:title="@string/pref_title_add_friends_to_messages"
+        android:defaultValue="-1"
+        android:entries="@array/pref_example_list_titles"
+        android:entryValues="@array/pref_example_list_values"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+-->
+
+</PreferenceScreen>
