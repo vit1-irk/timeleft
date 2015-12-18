@@ -35,17 +35,27 @@
         android:inputType="numberDecimal"
         />
     <EditTextPreference
-        android:key="vibrateOffsetMinutes"
-        android:title="За сколько минут предупреждать"
-        android:defaultValue="2"
-        android:inputType="numberDecimal"
-        />
-    <EditTextPreference
         android:key="breaksText"
         android:title="Перемены"
         android:defaultValue="15\n15\n10\n10\n10\n10\n10"
         android:inputType="textMultiLine"
         />
+    <PreferenceCategory
+        android:title="Оповещения"
+        >
+        <CheckBoxPreference
+            android:key="notifyUser"
+            android:title="Включить оповещения"
+            android:defaultValue="true"
+            />
+        <EditTextPreference
+            android:key="vibrateOffsetMinutes"
+            android:title="За сколько минут предупреждать"
+            android:defaultValue="2"
+            android:inputType="numberDecimal"
+            />
+    </PreferenceCategory>
+
 <!--
     <EditTextPreference
         android:key="example_text"

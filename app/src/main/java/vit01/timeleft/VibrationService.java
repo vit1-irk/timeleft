@@ -3,12 +3,15 @@ package vit01.timeleft;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 public class VibrationService extends Service {
     native public int sendNotifyOrNot();
@@ -20,6 +23,7 @@ public class VibrationService extends Service {
 
     private Handler mHandler = new Handler();
     public Intent in;
+    public SharedPreferences sharedPref;
 
     public VibrationService() {
         in=new Intent("VibrationService");
@@ -31,9 +35,11 @@ public class VibrationService extends Service {
 
     class Task implements Runnable {
         public void run() {
+            Context appContext=getApplicationContext();
+            sharedPref = PreferenceManager.getDefaultSharedPreferences(appContext);
             vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
             ringroneuri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            ringtone=RingtoneManager.getRingtone(getApplicationContext(), ringroneuri);
+            ringtone=RingtoneManager.getRingtone(appContext, ringroneuri);
             while(true) {
                 try {
                     Thread.sleep(1000);
@@ -60,10 +66,15 @@ public class VibrationService extends Service {
         throw new UnsupportedOperationException("Not yet implemented");
     }
     public void spyLessons() {
-        int sendNotify = sendNotifyOrNot();
-        if (sendNotify == 1) {
-            vibrator.vibrate(1000);
-            ringtone.play();
+        boolean notifyUser=sharedPref.getBoolean("notifyUser", true);
+
+        if (notifyUser) {
+            int sendNotify = sendNotifyOrNot();
+            if (sendNotify == 1) {
+                vibrator.vibrate(1000);
+                ringtone.play();
+            }
         }
     }
+
 }

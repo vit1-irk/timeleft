@@ -13,6 +13,7 @@ import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.ViewDebug;
 import android.widget.TabHost;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -29,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     TableLayout tableView;
     TabHost maintabs;
     BroadcastReceiver service;
+    IntentFilter filter;
 
     static {
         System.loadLibrary("timeleft");
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         maintabs.addTab(rasptab);
 
         resources_init();
-        IntentFilter filter=new IntentFilter();
+        filter=new IntentFilter();
         filter.addAction("VibrationService");
         service=new BroadcastReceiver() {
             @Override
@@ -73,6 +75,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         updatePrefs();
         super.onResume();
+    }
+
+    protected void onDestroy() {
+        stopService(new Intent(this, VibrationService.class));
+        unregisterReceiver(service);
+        super.onDestroy();
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -98,7 +106,8 @@ public class MainActivity extends AppCompatActivity {
         String btext4 = sharedPref.getString("countLessons", "");
         String btext5 = sharedPref.getString("lessonLength", "");
         String btext6 = sharedPref.getString("breaksText", "");
-        String btext7 = sharedPref.getString("vibrateOffsetMinutes", "");
+        int bint7=Integer.parseInt(sharedPref.getString("vibrateOffsetMinutes", "2")) * 60;
+        String btext7 = String.valueOf(bint7);
         // Toast.makeText(this, btext1, Toast.LENGTH_SHORT).show();
 
         String confText=btext1+":"+btext2+":"+btext3+":"+btext7+"\n";

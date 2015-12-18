@@ -121,7 +121,6 @@ void getcfg() {
 			printf ("Формат конфига неверный, пропускаем.\n");
 		} else {
 			sscanf(config_lines.index[0], "%d:%d:%d:%d", &start_lessons[0], &start_lessons[1], &localtime_offset, &notify_offset);
-			notify_offset*=60;
 			sscanf(config_lines.index[1], "%d:%d:%d", &count_lessons, &lesson_length, &default_break);
 		}
 
@@ -168,7 +167,7 @@ int saveConfig() {
 	FILE *f=fopen(__configPath, "w");
 	if (!f) return -1;
 
-	fprintf(f, "%d:%d:%d:%d\n", start_lessons[0], start_lessons[1], localtime_offset, notify_offset/60);
+	fprintf(f, "%d:%d:%d:%d\n", start_lessons[0], start_lessons[1], localtime_offset, notify_offset);
 	fprintf(f, "%d:%d:%d", count_lessons, lesson_length, default_break);
 
 	int count_breaks=count_timekeys/2;
@@ -209,7 +208,8 @@ void current_update(time_t *timekeys, int count_timekeys) {
 		strcat(textstring, "До начала уроков осталось: ");
 		strcat(textstring, timeAppearance(diff));
 		strcat(textstring, "\n");
-		
+
+		if (diff==notify_offset) is_notify=1; // если смещение искомое, бросаем уведомление
 	} else {
 		if (currPos==-2) strcat(textstring, "время после уроков\n");
 		else {
@@ -236,15 +236,19 @@ void current_update(time_t *timekeys, int count_timekeys) {
 					strcat(textstring, "\n");
 				}
 			}
+			if (diff==notify_offset) is_notify=1; // если смещение искомое, бросаем уведомление
+
 			diff=timekeys[count_timekeys-1]-current;
 			strcat(textstring, "\nДо конца уроков осталось: ");
 			strcat(textstring, timeAppearance(diff));
+
+			if (diff==notify_offset) is_notify=1; // если смещение искомое, бросаем уведомление
+
 			diff=current-timekeys[0];
 			strcat(textstring, "\nС начала уроков прошло: ");
 			strcat(textstring, timeAppearance(diff));
 		}
 	}
-	if (diff==notify_offset) is_notify=1; // если смещение искомое, бросаем уведомление
 }
 
 JNIEXPORT jstring JNICALL Java_vit01_timeleft_VibrationService_update_1wrapper(JNIEnv * env, jobject jObj) {
@@ -274,7 +278,6 @@ JNIEXPORT void JNICALL Java_vit01_timeleft_MainActivity_setConfig_1fromstring(JN
 		} else {
 			sscanf(config_lines.index[0], "%d:%d:%d:%d", &start_lessons[0], &start_lessons[1],
 				   &localtime_offset, &notify_offset);
-					notify_offset*=60;
 					sscanf(config_lines.index[1], "%d:%d:%d", &count_lessons, &lesson_length,
 				   &default_break);
 		}
