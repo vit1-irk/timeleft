@@ -1,41 +1,34 @@
 package vit01.timeleft;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.media.audiofx.BassBoost;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Button;
-import android.os.Handler;
 import android.widget.TabHost;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
     native public void resources_init();
-    native public String update_wrapper();
     native public void setConfig_fromstring(String text);
     native public String getTimetable();
 
-    private Handler mHandler = new Handler();
     String mytext;
     TextView maintextview;
     TableLayout tableView;
     TabHost maintabs;
+    BroadcastReceiver service;
 
     static {
         System.loadLibrary("timeleft");
@@ -62,34 +55,24 @@ public class MainActivity extends AppCompatActivity {
         maintabs.addTab(rasptab);
 
         resources_init();
-        new Thread(new Task()).start();
+        IntentFilter filter=new IntentFilter();
+        filter.addAction("VibrationService");
+        service=new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals("VibrationService")) {
+                    mytext=intent.getStringExtra("minutely");
+                    maintextview.setText(mytext);
+                }
+            }
+        };
+        registerReceiver(service, filter);
+        startService(new Intent(this, VibrationService.class));
     }
 
     protected void onResume() {
         updatePrefs();
         super.onResume();
-    }
-
-    public void frame_update() {
-        mytext=update_wrapper();
-        maintextview.setText(mytext);
-    }
-    class Task implements Runnable {
-        public void run() {
-            while(true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                mHandler.post(new Runnable() {
-                                  @Override
-                                  public void run() {
-                                      frame_update();
-                                  }}
-                );
-            }
-        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -115,9 +98,10 @@ public class MainActivity extends AppCompatActivity {
         String btext4 = sharedPref.getString("countLessons", "");
         String btext5 = sharedPref.getString("lessonLength", "");
         String btext6 = sharedPref.getString("breaksText", "");
+        String btext7 = sharedPref.getString("vibrateOffsetMinutes", "");
         // Toast.makeText(this, btext1, Toast.LENGTH_SHORT).show();
 
-        String confText=btext1+":"+btext2+":"+btext3+"\n";
+        String confText=btext1+":"+btext2+":"+btext3+":"+btext7+"\n";
         confText+=btext4+":"+btext5+":10\n"+btext6;
 
         setConfig_fromstring(confText);

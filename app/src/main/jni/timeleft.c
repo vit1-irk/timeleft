@@ -18,13 +18,15 @@ int current_offset;
 static char __configPath[200];
 char configfile[]=".local/share/timetable.cfg";
 char configfile_fallback[]=".timetable.cfg";
-char configtext_default[]="14:0:28800\n6:40:10\n15\n15\n10\n10\n10\n10\n10";
+char configtext_default[]="14:0:28800:120\n6:40:10\n15\n15\n10\n10\n10\n10\n10";
 
 int start_lessons[] = { 14, 0 };
 int breaks_in_minutes[BREAKS_MAX_INDEX+1] = { 15, 15, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 };
 int default_break=10;
 int lesson_length=40;
 int count_lessons=6;
+int notify_offset=120;
+int is_notify=0;
 static int count_timekeys;
 static time_t* timekeys;
 static char textstring[1000];
@@ -118,7 +120,8 @@ void getcfg() {
 		if (config_lines.length<2) {
 			printf ("Формат конфига неверный, пропускаем.\n");
 		} else {
-			sscanf(config_lines.index[0], "%d:%d:%d", &start_lessons[0], &start_lessons[1], &localtime_offset);
+			sscanf(config_lines.index[0], "%d:%d:%d:%d", &start_lessons[0], &start_lessons[1], &localtime_offset, &notify_offset);
+			notify_offset*=60;
 			sscanf(config_lines.index[1], "%d:%d:%d", &count_lessons, &lesson_length, &default_break);
 		}
 
@@ -165,7 +168,7 @@ int saveConfig() {
 	FILE *f=fopen(__configPath, "w");
 	if (!f) return -1;
 
-	fprintf(f, "%d:%d:%d\n", start_lessons[0], start_lessons[1], localtime_offset);
+	fprintf(f, "%d:%d:%d:%d\n", start_lessons[0], start_lessons[1], localtime_offset, notify_offset/60);
 	fprintf(f, "%d:%d:%d", count_lessons, lesson_length, default_break);
 
 	int count_breaks=count_timekeys/2;
@@ -177,13 +180,15 @@ int saveConfig() {
 	return 0;
 }
 
-
 void current_update(time_t *timekeys, int count_timekeys) {
 	time_t curr_timestamp=time(NULL)+localtime_offset; // текущее время + смещение по Иркутску
 	//time_t curr_timestamp=57000;
 	current_usable=gmtime(&curr_timestamp);
 	// дневное timestamp-смещение момента "сейчас"
 	current=(*current_usable).tm_hour*3600+(*current_usable).tm_min*60+(*current_usable).tm_sec;
+
+	// если уже бросалось оповещение, то снимаем его
+	if (is_notify==1) is_notify=0;
 
 	// смотрим, где мы находимся относительно временных меток уроков или перемен
 	int currPos=currentPosition(timekeys, count_timekeys, current);
@@ -239,15 +244,20 @@ void current_update(time_t *timekeys, int count_timekeys) {
 			strcat(textstring, timeAppearance(diff));
 		}
 	}
+	if (diff==notify_offset) is_notify=1; // если смещение искомое, бросаем уведомление
 }
 
-JNIEXPORT jstring JNICALL Java_vit01_timeleft_MainActivity_update_1wrapper(JNIEnv * env, jobject jObj) {
+JNIEXPORT jstring JNICALL Java_vit01_timeleft_VibrationService_update_1wrapper(JNIEnv * env, jobject jObj) {
 	current_update(timekeys, count_timekeys);
 	return (*env)->NewStringUTF(env, textstring);
 }
 JNIEXPORT jstring JNICALL Java_vit01_timeleft_MainActivity_getTimetable(JNIEnv * env, jobject jObj) {
 	printTimeTable(timekeys, count_timekeys);
 	return (*env)->NewStringUTF(env, textstring);
+}
+
+JNIEXPORT jint JNICALL Java_vit01_timeleft_VibrationService_sendNotifyOrNot(JNIEnv * env, jobject jObj) {
+	return (jint)is_notify;
 }
 JNIEXPORT void JNICALL Java_vit01_timeleft_MainActivity_setConfig_1fromstring(JNIEnv * env, jobject jObj,
 																			jstring config_java
@@ -262,9 +272,10 @@ JNIEXPORT void JNICALL Java_vit01_timeleft_MainActivity_setConfig_1fromstring(JN
 		if (config_lines.length < 2) {
 			printf("Формат конфига неверный, пропускаем.\n");
 		} else {
-			sscanf(config_lines.index[0], "%d:%d:%d", &start_lessons[0], &start_lessons[1],
-				   &localtime_offset);
-			sscanf(config_lines.index[1], "%d:%d:%d", &count_lessons, &lesson_length,
+			sscanf(config_lines.index[0], "%d:%d:%d:%d", &start_lessons[0], &start_lessons[1],
+				   &localtime_offset, &notify_offset);
+					notify_offset*=60;
+					sscanf(config_lines.index[1], "%d:%d:%d", &count_lessons, &lesson_length,
 				   &default_break);
 		}
 

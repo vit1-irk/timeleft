@@ -35,6 +35,12 @@
         android:inputType="numberDecimal"
         />
     <EditTextPreference
+        android:key="vibrateOffsetMinutes"
+        android:title="За сколько минут предупреждать"
+        android:defaultValue="2"
+        android:inputType="numberDecimal"
+        />
+    <EditTextPreference
         android:key="breaksText"
         android:title="Перемены"
         android:defaultValue="15\n15\n10\n10\n10\n10\n10"
