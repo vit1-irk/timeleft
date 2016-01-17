@@ -36,7 +36,9 @@ public class VibrationService extends Service {
     class Task implements Runnable {
         public void run() {
             Context appContext=getApplicationContext();
-            sharedPref = PreferenceManager.getDefaultSharedPreferences(appContext);
+            String shift=PreferenceManager.getDefaultSharedPreferences(appContext).getString("currshift", "1");
+            sharedPref = getSharedPreferences("settings" + shift, MODE_PRIVATE);
+
             vibrator = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
             ringroneuri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             ringtone=RingtoneManager.getRingtone(appContext, ringroneuri);
