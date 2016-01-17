@@ -38,6 +38,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupActionBar();
+        SharedPreferences commonPref=PreferenceManager.getDefaultSharedPreferences(this);
+        String shift=commonPref.getString("currshift", "1");
+
+        PreferenceManager prefManager=getPreferenceManager();
+        prefManager.setSharedPreferencesName("settings"+shift);
         addPreferencesFromResource(R.xml.pref_general);
     }
     private void setupActionBar() {

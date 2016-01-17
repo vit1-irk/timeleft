@@ -63,6 +63,38 @@
                     </TableLayout>
                 </ScrollView>
 
+
+                <LinearLayout
+                    android:id="@+id/shiftslayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:nestedScrollingEnabled="true">
+
+                    <ScrollView
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content">
+                        <RadioGroup
+                            android:layout_width="wrap_content"
+                            android:id="@+id/shiftsradiogroup"
+                            android:layout_height="wrap_content"
+                            android:saveEnabled="true">
+                            <RadioButton
+                                android:id="@+id/first"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="1"
+                                />
+                            <RadioButton
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="2"
+                                />
+                        </RadioGroup>
+                    </ScrollView>
+
+                </LinearLayout>
+
             </FrameLayout>
         </LinearLayout>
     </TabHost>

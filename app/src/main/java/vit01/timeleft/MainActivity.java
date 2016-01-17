@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -14,6 +15,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.ViewDebug;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TabHost;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -26,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     native public String getTimetable();
 
     String mytext;
+    String shift;
     TextView maintextview;
     TableLayout tableView;
     TabHost maintabs;
@@ -49,12 +53,26 @@ public class MainActivity extends AppCompatActivity {
         TabHost.TabSpec timetab=maintabs.newTabSpec("timetab");
         timetab.setContent(R.id.linearLayout);
         timetab.setIndicator("Время");
+
         TabHost.TabSpec rasptab=maintabs.newTabSpec("rasptab");
         rasptab.setContent(R.id.tableLayout);
         rasptab.setIndicator("Расписание");
 
+        TabHost.TabSpec shiftstab=maintabs.newTabSpec("shiftstab");
+        shiftstab.setContent(R.id.shiftslayout);
+        shiftstab.setIndicator("Смены");
+
         maintabs.addTab(timetab);
         maintabs.addTab(rasptab);
+        maintabs.addTab(shiftstab);
+
+        RadioGroup rg=(RadioGroup)findViewById(R.id.shiftsradiogroup);
+        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                updateRadio();
+            }
+        });
 
         resources_init();
         filter=new IntentFilter();
@@ -64,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 if (intent.getAction().equals("VibrationService")) {
                     mytext=intent.getStringExtra("minutely");
-                    maintextview.setText(mytext);
+                    maintextview.setText("Смена: "+shift+"\n"+mytext);
                 }
             }
         };
@@ -98,8 +116,23 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+    public void updateRadio() {
+        RadioGroup radiogroup=(RadioGroup)findViewById(R.id.shiftsradiogroup);
+        RadioButton selected=(RadioButton)findViewById(radiogroup.getCheckedRadioButtonId());
+        shift=selected.getText().toString();
+
+        SharedPreferences defaultpref=PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor=defaultpref.edit();
+        editor.putString("currshift", shift);
+        editor.commit();
+
+        updatePrefs();
+    }
+
     public void updatePrefs() {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        shift=PreferenceManager.getDefaultSharedPreferences(this).getString("currshift", "1");
+        SharedPreferences sharedPref = getSharedPreferences("settings"+shift, MODE_PRIVATE);
+
         String btext1 = sharedPref.getString("startHour", "");
         String btext2 = sharedPref.getString("startMinute", "");
         String btext3 = sharedPref.getString("localOffset", "");
@@ -141,6 +174,6 @@ public class MainActivity extends AppCompatActivity {
             tableView.addView(row);
         }
 
-        Toast.makeText(MainActivity.this, "Подгружаем настройки", Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, "Подгружаем настройки: " + shift , Toast.LENGTH_SHORT).show();
     }
 }
