@@ -35,7 +35,7 @@ public class VibrationService extends Service {
 
     class Task implements Runnable {
         public void run() {
-            Context appContext=getApplicationContext();
+            Context appContext=VibrationService.this;
             String shift=PreferenceManager.getDefaultSharedPreferences(appContext).getString("currshift", "1");
             sharedPref = getSharedPreferences("settings" + shift, MODE_PRIVATE);
 
